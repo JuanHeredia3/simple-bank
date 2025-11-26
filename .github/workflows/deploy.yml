@@ -3,10 +3,14 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     name: Build image
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -14,7 +18,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::207662791590:user/github-ci
+          role-to-assume: arn:aws:iam::aws:policy/AmazonElasticContainerRegistryPublicFullAccess
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
