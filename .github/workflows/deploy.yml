@@ -18,7 +18,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::aws:policy/AmazonElasticContainerRegistryPublicFullAccess
+          role-to-assume: arn:aws:iam::207662791590:role/simplebank
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
