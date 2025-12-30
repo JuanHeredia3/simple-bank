@@ -40,6 +40,7 @@ func (server *Server) setUpRouter() {
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
@@ -56,6 +57,6 @@ func (server *Server) Start(address string) error {
 	return server.router.Run(address)
 }
 
-func errorsResponse(err error) gin.H {
+func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }

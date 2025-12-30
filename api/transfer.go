@@ -20,7 +20,7 @@ type transferRequest struct {
 func (server *Server) createTransfer(ctx *gin.Context) {
 	var req transferRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorsResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
@@ -32,7 +32,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	if fromAccount.Owner != authPayload.Username {
 		err := fmt.Errorf("account %d doesn't belong to the authenticated user", fromAccount.ID)
-		ctx.JSON(http.StatusUnauthorized, errorsResponse(err))
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -49,7 +49,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 
 	result, err := server.store.TransferTx(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorsResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
@@ -60,16 +60,16 @@ func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency s
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorsResponse(err))
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return account, false
 		}
-		ctx.JSON(http.StatusInternalServerError, errorsResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return account, false
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("account %d currency mismatch: %s vs %s", accountID, account.Currency, currency)
-		ctx.JSON(http.StatusBadRequest, errorsResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return account, false
 	}
 
