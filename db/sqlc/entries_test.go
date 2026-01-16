@@ -2,20 +2,20 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/JuanHeredia3/simple-bank/util"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
 
 func CreateRandomEntry(t *testing.T, account Account) Entry {
 	arg := CreateEntryParams{
-		AccountID: sql.NullInt64{Int64: account.ID, Valid: true},
+		AccountID: pgtype.Int8{Int64: account.ID, Valid: true},
 		Amount:    util.RandomMoney(),
 	}
-	entry, err := testQueries.CreateEntry(context.Background(), arg)
+	entry, err := testStore.CreateEntry(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, entry)
 
@@ -36,7 +36,7 @@ func TestCreateEntry(t *testing.T) {
 func TestGetEntry(t *testing.T) {
 	account := CreateRandomAccount(t)
 	entry1 := CreateRandomEntry(t, account)
-	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
+	entry2, err := testStore.GetEntry(context.Background(), entry1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, entry2)
@@ -50,12 +50,12 @@ func TestGetEntry(t *testing.T) {
 func TestDeleteEntry(t *testing.T) {
 	account := CreateRandomAccount(t)
 	entry1 := CreateRandomEntry(t, account)
-	err := testQueries.DeleteEntry(context.Background(), entry1.ID)
+	err := testStore.DeleteEntry(context.Background(), entry1.ID)
 	require.NoError(t, err)
 
-	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
+	entry2, err := testStore.GetEntry(context.Background(), entry1.ID)
 	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
+	require.EqualError(t, err, ErrRecordNotFound.Error())
 	require.Empty(t, entry2)
 }
 
@@ -67,7 +67,7 @@ func TestUpdateEntry(t *testing.T) {
 		Amount: util.RandomMoney(),
 	}
 
-	entry2, err := testQueries.UpdateEntry(context.Background(), arg)
+	entry2, err := testStore.UpdateEntry(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, entry2)
 	require.Equal(t, entry1.ID, entry2.ID)
@@ -88,7 +88,7 @@ func TestListEntries(t *testing.T) {
 		Offset: 5,
 	}
 
-	entries, err := testQueries.ListEntries(context.Background(), arg)
+	entries, err := testStore.ListEntries(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, entries, 5)
 

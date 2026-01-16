@@ -8,8 +8,6 @@ import (
 )
 
 func TestTransferTx(t *testing.T) {
-	store := NewStore(testDB)
-
 	account1 := CreateRandomAccount(t)
 	account2 := CreateRandomAccount(t)
 
@@ -21,7 +19,7 @@ func TestTransferTx(t *testing.T) {
 
 	for range n {
 		go func() {
-			result, err := store.TransferTx(context.Background(), TransferTxParams{
+			result, err := testStore.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -53,7 +51,7 @@ func TestTransferTx(t *testing.T) {
 		require.NotZero(t, transfer.ID)
 		require.NotZero(t, transfer.CreatedAt)
 
-		_, err = store.GetTransfer(context.Background(), transfer.ID)
+		_, err = testStore.GetTransfer(context.Background(), transfer.ID)
 		require.NoError(t, err)
 
 		// check entries
@@ -64,7 +62,7 @@ func TestTransferTx(t *testing.T) {
 		require.NotZero(t, fromEntry.ID)
 		require.NotZero(t, fromEntry.CreatedAt)
 
-		_, err = store.GetEntry(context.Background(), fromEntry.ID)
+		_, err = testStore.GetEntry(context.Background(), fromEntry.ID)
 		require.NoError(t, err)
 
 		toEntry := result.ToEntry
@@ -74,7 +72,7 @@ func TestTransferTx(t *testing.T) {
 		require.NotZero(t, toEntry.ID)
 		require.NotZero(t, toEntry.CreatedAt)
 
-		_, err = store.GetEntry(context.Background(), toEntry.ID)
+		_, err = testStore.GetEntry(context.Background(), toEntry.ID)
 		require.NoError(t, err)
 
 		fromAccount := result.FromAccount
@@ -97,10 +95,10 @@ func TestTransferTx(t *testing.T) {
 		existed[k] = true
 	}
 
-	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	updatedAccount1, err := testStore.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
-	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	updatedAccount2, err := testStore.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err)
 
 	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
@@ -108,8 +106,6 @@ func TestTransferTx(t *testing.T) {
 }
 
 func TestTransferTxDeadlock(t *testing.T) {
-	store := NewStore(testDB)
-
 	account1 := CreateRandomAccount(t)
 	account2 := CreateRandomAccount(t)
 
@@ -128,7 +124,7 @@ func TestTransferTxDeadlock(t *testing.T) {
 		}
 
 		go func() {
-			_, err := store.TransferTx(context.Background(), TransferTxParams{
+			_, err := testStore.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: fromAccountID,
 				ToAccountID:   toAccountID,
 				Amount:        amount,
@@ -146,10 +142,10 @@ func TestTransferTxDeadlock(t *testing.T) {
 		}
 	}
 
-	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	updatedAccount1, err := testStore.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
-	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	updatedAccount2, err := testStore.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err)
 
 	require.Equal(t, account1.Balance, updatedAccount1.Balance)

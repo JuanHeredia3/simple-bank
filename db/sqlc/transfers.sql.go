@@ -25,7 +25,7 @@ type CreateTransferParams struct {
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
-	row := q.db.QueryRowContext(ctx, createTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
+	row := q.db.QueryRow(ctx, createTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,
@@ -43,7 +43,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteTransfer(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteTransfer, id)
+	_, err := q.db.Exec(ctx, deleteTransfer, id)
 	return err
 }
 
@@ -53,7 +53,7 @@ WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
-	row := q.db.QueryRowContext(ctx, getTransfer, id)
+	row := q.db.QueryRow(ctx, getTransfer, id)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,
@@ -78,12 +78,12 @@ type ListtransfersParams struct {
 }
 
 func (q *Queries) Listtransfers(ctx context.Context, arg ListtransfersParams) ([]Transfer, error) {
-	rows, err := q.db.QueryContext(ctx, listtransfers, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listtransfers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transfer
+	items := []Transfer{}
 	for rows.Next() {
 		var i Transfer
 		if err := rows.Scan(
@@ -96,9 +96,6 @@ func (q *Queries) Listtransfers(ctx context.Context, arg ListtransfersParams) ([
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -119,7 +116,7 @@ type UpdateTransferParams struct {
 }
 
 func (q *Queries) UpdateTransfer(ctx context.Context, arg UpdateTransferParams) (Transfer, error) {
-	row := q.db.QueryRowContext(ctx, updateTransfer, arg.ID, arg.Amount)
+	row := q.db.QueryRow(ctx, updateTransfer, arg.ID, arg.Amount)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,
