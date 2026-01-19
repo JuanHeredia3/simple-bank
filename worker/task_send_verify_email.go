@@ -56,6 +56,8 @@ func (processor *RedisTaskProcessor) ProccessTaskSendVerifyEmail(ctx context.Con
 		return fmt.Errorf("failed to create verify email: %w", err)
 	}
 
+	// TODO: fix issue with fmt.Sprintf
+
 	err = processor.mailer.SendEmail(
 		"Welcome to Simple Bank! Please verify your email address",
 		fmt.Sprintf("Hello %s,\n\nThank you for registering at Simple Bank! Please verify your email address by clicking the link below:\n\nhttp://localhost:8080/v1/verify_email?email_id=%s&secret_code=%s\n\nIf you did not sign up for Simple Bank, please ignore this email.\n\nBest regards,\nSimple Bank Team", verifyEmail.ID, verifyEmail.SecretCode),
